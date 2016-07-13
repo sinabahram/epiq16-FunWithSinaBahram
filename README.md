@@ -1,0 +1,2 @@
+# Fun With Sina Bahram
+The plan so far is to have these shapes that consists of rods along each axis, and at 45 degrees of each axis, so 9 rods in total per shape. Such a shape is called a cross in this code. Then we have six  crosses in a group, one in each of the extremes of an x, y, z configuration. The crosses in a cross group will be twirling/rotating. We then will also have multiple cross groups, and rotating the cross group as well.
