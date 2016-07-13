@@ -17,6 +17,8 @@ use Libraries.Compute.Random
 
 class Main is Game, KeyboardListener
 Array<Audio3D> tones
+Array<Model> crosses
+Array<Model> crossGroups
 Audio3D chirp
 Camera camera = undefined
 
@@ -26,7 +28,9 @@ Random random
 InputMonitor monitor
 KeyboardEvent keys
 
-number rotateValue = 0.0
+number chirpRotateValue = 0.0
+number crossRotateValue = 0.0
+number crossGroupRotateValue = 0.0
 
     action Main
         SetScreenSize(1024, 768)
@@ -39,7 +43,7 @@ InitializeTones()
 AddKeyboardListener(me)
 InitializeLight()
 InitializeCamera()
-Initialize3DCrosses()
+InitializeCrossGroups()
 end
 
 action InitializeChirp()
@@ -68,29 +72,58 @@ action MakeCross(Color color) returns Model
 Model x
 Model y
 Model z
+Model xyN
+Model xyP
+Model xzN
+Model xzP
+Model yzN
+Model yzP
 Model cross
+
 length = 10.0
+
 x:LoadCylinder(length, 1.0, 1.0, color)
+xyN:LoadCylinder(length, 1.0, 1.0, color)
+xyP:LoadCylinder(length, 1.0, 1.0, color)
+xyN:Rotate(0, 0, 1.0, -45)
+xyP:Rotate(0, 0, 1.0, 45)
+
 y:LoadCylinder(1.0, length, 1.0, color)
+yzN:LoadCylinder(1.0, length, 1.0, color)
+yzP:LoadCylinder(1.0, length, 1.0, color)
+yzN:Rotate(1.0, 0, 0, -45)
+yzP:Rotate(1.0, 0, 0, 45)
+
 z:LoadCylinder(1.0, 1.0, length, color)
+xzN:LoadCylinder(1.0, 1.0, length, color)
+xzP:LoadCylinder(1.0, 1.0, length, color)
+xzN:Rotate(0, 1.0, 0, -45)
+xzP:Rotate(0, 1.0, 0, 45)
+
 cross:Add(x)
 cross:Add(y)
 cross:Add(z)
+cross:Add(xyN)
+cross:Add(xyP)
+cross:Add(yzN)
+cross:Add(yzP)
+cross:Add(xzN)
+cross:Add(xzP)
 return cross
 end
 
-action AddAndMoveCross(number x, number y, number z, Color color)
+action CreateAndMoveCross(number x, number y, number z, Color color) returns Model
 Model cross = MakeCross(color)
-Add(cross)
-PlayRandomTones(3, false)
+PlayRandomTones(9, false)
 StartSonifying(cross)
 cross:Move(x, y, z)
 StopSonifying(cross)
+return cross
 end
 
 action StartSonifying(Model model)
 model:Add(chirp)
-chirp:Play()
+chirp:PlayUntilDone()
 end
 
 action StopSonifying(Model model)
@@ -98,13 +131,43 @@ chirp:Stop()
 model:Remove(chirp)
 end
 
-action Initialize3DCrosses
-AddAndMoveCross(-50, 0, 0, color:Red())
-AddAndMoveCross(50, 0, 0, color:Red())
-AddAndMoveCross(0, -50, 0, color:Green())
-AddAndMoveCross(0, 50, 0, color:Green())
-AddAndMoveCross(0, 0, -50, color:Blue())
-AddAndMoveCross(0, 0, 50, color:Blue())
+action MakeCrossGroup() returns Model
+Model crossGroup
+Model cross
+
+cross = CreateAndMoveCross(-50, 0, 0, color:Red())
+crossGroup:Add(cross)
+crosses:Add(cross)
+
+cross = CreateAndMoveCross(50, 0, 0, color:Red())
+crossGroup:Add(cross)
+crosses:Add(cross)
+
+cross = CreateAndMoveCross(0, -50, 0, color:Green())
+crossGroup:Add(cross)
+crosses:Add(cross)
+
+cross = CreateAndMoveCross(0, 50, 0, color:Green())
+crossGroup:Add(cross)
+crosses:Add(cross)
+
+cross = CreateAndMoveCross(0, 0, -50, color:Blue())
+crossGroup:Add(cross)
+crosses:Add(cross)
+
+cross = CreateAndMoveCross(0, 0, 50, color:Blue())
+crossGroup:Add(cross)
+crosses:Add(cross)
+
+return crossGroup
+end
+
+action InitializeCrossGroups()
+Model crossGroup
+crossGroup = MakeCrossGroup()
+crossGroups:Add(crossGroup)
+Add(crossGroup)
+
 end
 
 action CustomAudio3D(text filename) returns Audio3D
@@ -136,7 +199,19 @@ end
 end
 
     action Update(number seconds)
-chirp:Rotate(rotateValue)
+chirp:Rotate(chirpRotateValue)
+
+counter = 0
+repeat while counter < crosses:GetSize()
+crosses:Get(counter):Rotate(-0.5, -0.5, 0, crossRotateValue)
+counter = counter+1
+end
+
+counter = 0
+repeat while counter < crossGroups:GetSize()
+crossGroups:Get(counter):Rotate(0, 0, 1.0, crossGroupRotateValue)
+counter = counter+1
+end
 end
 
     action PressedKey(KeyboardEvent event)
@@ -151,13 +226,13 @@ PlayRandomTone(true)
         elseif event:keyCode = event:S
 PlayRandomTones(random:RandomIntegerBetween(2, 100), true)
         elseif event:keyCode = event:UP
-// todo
+crossRotateValue = crossRotateValue+0.25
         elseif event:keyCode = event:DOWN
-// todo
+crossRotateValue = crossRotateValue-0.25
         elseif event:keyCode = event:LEFT
-// todo
+crossGroupRotateValue = crossGroupRotateValue-0.25
         elseif event:keyCode = event:RIGHT
-// todo
+crossGroupRotateValue = crossGroupRotateValue+0.25
         elseif event:keyCode = event:PAGE_UP
 // todo
         elseif event:keyCode = event:PAGE_DOWN
@@ -167,9 +242,9 @@ PlayRandomTones(random:RandomIntegerBetween(2, 100), true)
         elseif event:keyCode = event:D
 // todo
         elseif event:keyCode = event:LEFT_BRACKET
-rotateValue = rotateValue+0.25
+chirpRotateValue = chirpRotateValue+0.25
         elseif event:keyCode = event:RIGHT_BRACKET
-rotateValue = rotateValue-0.25
+chirpRotateValue = chirpRotateValue-0.25
 end
 end
 end
