@@ -1,0 +1,26 @@
+use Libraries.Game.Graphics.Model
+use Libraries.Compute.Vector3
+
+class Animation
+Vector3 velocity
+Vector3 stop
+Model model
+
+action Set(Vector3 velocity, Vector3 stop, Model model)
+me:velocity = velocity
+me:stop = stop
+me:model = model
+end
+
+action GetStop() returns Vector3
+return stop
+end
+
+action GetVelocity() returns Vector3
+return velocity
+end
+
+action GetModel() returns Model
+return model
+end
+end
